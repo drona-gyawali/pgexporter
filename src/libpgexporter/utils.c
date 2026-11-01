@@ -1537,6 +1537,7 @@ pgexporter_copy_file(char* from, char* to)
    char buffer[8192];
    ssize_t nread = -1;
    int saved_errno = -1;
+   struct stat st;
 
    fd_from = open(from, O_RDONLY);
    if (fd_from < 0)
@@ -1544,8 +1545,12 @@ pgexporter_copy_file(char* from, char* to)
       goto error;
    }
 
-   /* TODO: Permissions */
-   fd_to = open(to, O_WRONLY | O_CREAT | O_EXCL, 0664);
+   if (fstat(fd_from, &st) < 0)
+   {
+      goto error;
+   }
+
+   fd_to = open(to, O_WRONLY | O_CREAT | O_EXCL, st.st_mode);
    if (fd_to < 0)
    {
       goto error;
